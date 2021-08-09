@@ -50,10 +50,10 @@ public class RemoteServiceHandler extends RemoteServiceGrpc.RemoteServiceImplBas
 
     private final ModuleDefineHolder moduleDefineHolder;
     private IWorkerInstanceGetter workerInstanceGetter;
-    private CounterMetrics remoteInCounter;
-    private CounterMetrics remoteInErrorCounter;
-    private CounterMetrics remoteInTargetNotFoundCounter;
-    private HistogramMetrics remoteInHistogram;
+    private final CounterMetrics remoteInCounter;
+    private final CounterMetrics remoteInErrorCounter;
+    private final CounterMetrics remoteInTargetNotFoundCounter;
+    private final HistogramMetrics remoteInHistogram;
 
     public RemoteServiceHandler(ModuleDefineHolder moduleDefineHolder) {
         this.moduleDefineHolder = moduleDefineHolder;
@@ -111,15 +111,14 @@ public class RemoteServiceHandler extends RemoteServiceGrpc.RemoteServiceImplBas
             @Override
             public void onNext(RemoteMessage message) {
                 remoteInCounter.inc();
-                HistogramMetrics.Timer timer = remoteInHistogram.createTimer();
-                try {
+                try (HistogramMetrics.Timer ignored = remoteInHistogram.createTimer()) {
                     String nextWorkerName = message.getNextWorkerName();
                     RemoteData remoteData = message.getRemoteData();
 
                     try {
                         RemoteHandleWorker handleWorker = workerInstanceGetter.get(nextWorkerName);
                         if (handleWorker != null) {
-                            AbstractWorker nextWorker = handleWorker.getWorker();
+                            AbstractWorker<StreamData> nextWorker = handleWorker.getWorker();
                             StreamData streamData = handleWorker.getStreamDataClass().newInstance();
                             streamData.deserialize(remoteData);
                             nextWorker.in(streamData);
@@ -134,8 +133,6 @@ public class RemoteServiceHandler extends RemoteServiceGrpc.RemoteServiceImplBas
                         remoteInErrorCounter.inc();
                         LOGGER.error(t.getMessage(), t);
                     }
-                } finally {
-                    timer.finish();
                 }
             }
 

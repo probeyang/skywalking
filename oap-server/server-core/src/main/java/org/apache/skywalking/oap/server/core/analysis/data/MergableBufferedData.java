@@ -18,10 +18,10 @@
 
 package org.apache.skywalking.oap.server.core.analysis.data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 
 /**
@@ -61,7 +61,7 @@ public class MergableBufferedData<METRICS extends Metrics> implements BufferedDa
     @Override
     public List<METRICS> read() {
         try {
-            return buffer.values().stream().collect(Collectors.toList());
+            return new ArrayList<>(buffer.values());
         } finally {
             buffer.clear();
         }

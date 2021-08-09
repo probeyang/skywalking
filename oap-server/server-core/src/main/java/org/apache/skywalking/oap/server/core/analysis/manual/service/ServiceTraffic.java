@@ -94,6 +94,16 @@ public class ServiceTraffic extends Metrics {
         return builder;
     }
 
+    @Override
+    public void recycle() {
+        this.name = null;
+        this.nodeType = null;
+        this.group = null;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
     public static class Builder implements StorageHashMapBuilder<ServiceTraffic> {
 
         @Override

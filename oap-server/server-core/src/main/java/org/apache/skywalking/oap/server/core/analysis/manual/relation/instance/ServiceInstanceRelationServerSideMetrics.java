@@ -24,6 +24,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
@@ -32,40 +33,53 @@ import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
 import org.apache.skywalking.oap.server.core.storage.StorageHashMapBuilder;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 
-@Stream(name = ServiceInstanceRelationServerSideMetrics.INDEX_NAME, scopeId = DefaultScopeDefine.SERVICE_INSTANCE_RELATION,
-    builder = ServiceInstanceRelationServerSideMetrics.Builder.class, processor = MetricsStreamProcessor.class)
+@Stream(
+    name = ServiceInstanceRelationServerSideMetrics.INDEX_NAME,
+    scopeId = DefaultScopeDefine.SERVICE_INSTANCE_RELATION,
+    builder = ServiceInstanceRelationServerSideMetrics.Builder.class,
+    processor = MetricsStreamProcessor.class)
 @EqualsAndHashCode(of = {
     "entityId"
 }, callSuper = true)
 public class ServiceInstanceRelationServerSideMetrics extends Metrics {
 
     public static final String INDEX_NAME = "service_instance_relation_server_side";
+
     public static final String SOURCE_SERVICE_ID = "source_service_id";
+
     public static final String SOURCE_SERVICE_INSTANCE_ID = "source_service_instance_id";
+
     public static final String DEST_SERVICE_ID = "dest_service_id";
+
     public static final String DEST_SERVICE_INSTANCE_ID = "dest_service_instance_id";
+
     public static final String COMPONENT_ID = "component_id";
 
     @Setter
     @Getter
     @Column(columnName = SOURCE_SERVICE_ID)
     private String sourceServiceId;
+
     @Setter
     @Getter
     @Column(columnName = SOURCE_SERVICE_INSTANCE_ID)
     private String sourceServiceInstanceId;
+
     @Setter
     @Getter
     @Column(columnName = DEST_SERVICE_ID)
     private String destServiceId;
+
     @Setter
     @Getter
     @Column(columnName = DEST_SERVICE_INSTANCE_ID)
     private String destServiceInstanceId;
+
     @Setter
     @Getter
     @Column(columnName = COMPONENT_ID, storageOnly = true)
     private int componentId;
+
     @Setter
     @Getter
     @Column(columnName = ENTITY_ID, length = 512)
@@ -88,7 +102,8 @@ public class ServiceInstanceRelationServerSideMetrics extends Metrics {
 
     @Override
     public Metrics toHour() {
-        ServiceInstanceRelationServerSideMetrics metrics = new ServiceInstanceRelationServerSideMetrics();
+        ServiceInstanceRelationServerSideMetrics metrics =
+            MetricsObjectPool.get(ServiceInstanceRelationServerSideMetrics.class);
         metrics.setTimeBucket(toTimeBucketInHour());
         metrics.setSourceServiceId(getSourceServiceId());
         metrics.setSourceServiceInstanceId(getSourceServiceInstanceId());
@@ -101,7 +116,8 @@ public class ServiceInstanceRelationServerSideMetrics extends Metrics {
 
     @Override
     public Metrics toDay() {
-        ServiceInstanceRelationServerSideMetrics metrics = new ServiceInstanceRelationServerSideMetrics();
+        ServiceInstanceRelationServerSideMetrics metrics =
+            MetricsObjectPool.get(ServiceInstanceRelationServerSideMetrics.class);
         metrics.setTimeBucket(toTimeBucketInDay());
         metrics.setSourceServiceId(getSourceServiceId());
         metrics.setSourceServiceInstanceId(getSourceServiceInstanceId());
@@ -148,11 +164,26 @@ public class ServiceInstanceRelationServerSideMetrics extends Metrics {
         return remoteBuilder;
     }
 
-    public static class Builder implements StorageHashMapBuilder<ServiceInstanceRelationServerSideMetrics> {
+    @Override
+    public void recycle() {
+        this.sourceServiceId = null;
+        this.sourceServiceInstanceId = null;
+        this.destServiceId = null;
+        this.destServiceInstanceId = null;
+        this.componentId = 0;
+        this.entityId = null;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
+    public static class Builder
+        implements StorageHashMapBuilder<ServiceInstanceRelationServerSideMetrics> {
 
         @Override
         public ServiceInstanceRelationServerSideMetrics storage2Entity(Map<String, Object> dbMap) {
-            ServiceInstanceRelationServerSideMetrics metrics = new ServiceInstanceRelationServerSideMetrics();
+            ServiceInstanceRelationServerSideMetrics metrics =
+                MetricsObjectPool.get(ServiceInstanceRelationServerSideMetrics.class);
             metrics.setEntityId((String) dbMap.get(ENTITY_ID));
             metrics.setSourceServiceId((String) dbMap.get(SOURCE_SERVICE_ID));
             metrics.setSourceServiceInstanceId((String) dbMap.get(SOURCE_SERVICE_INSTANCE_ID));
@@ -164,7 +195,8 @@ public class ServiceInstanceRelationServerSideMetrics extends Metrics {
         }
 
         @Override
-        public Map<String, Object> entity2Storage(ServiceInstanceRelationServerSideMetrics storageData) {
+        public Map<String, Object> entity2Storage(
+            ServiceInstanceRelationServerSideMetrics storageData) {
             Map<String, Object> map = new HashMap<>();
             map.put(ENTITY_ID, storageData.getEntityId());
             map.put(SOURCE_SERVICE_ID, storageData.getSourceServiceId());

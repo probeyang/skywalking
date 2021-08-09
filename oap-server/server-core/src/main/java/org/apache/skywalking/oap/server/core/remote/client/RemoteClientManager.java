@@ -61,7 +61,7 @@ public class RemoteClientManager implements Service {
     private ClusterNodesQuery clusterNodesQuery;
     private volatile List<RemoteClient> usingClients;
     private GaugeMetrics gauge;
-    private int remoteTimeout;
+    private final int remoteTimeout;
 
     /**
      * Initial the manager for all remote communication clients.

@@ -87,4 +87,12 @@ public abstract class HistogramMetrics extends Metrics {
     @Override
     public final void calculate() {
     }
+
+    @Override
+    public void recycle() {
+        this.dataset.recycle();
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

@@ -42,28 +42,35 @@ import org.apache.skywalking.oap.server.core.storage.StorageHashMapBuilder;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 
 /**
- * PercentileFunction is the implementation of {@link PercentileMetrics} in the meter system. The major difference is
- * the PercentileFunction accepts the {@link PercentileArgument} as input rather than every single request.
+ * PercentileFunction is the implementation of {@link PercentileMetrics} in the meter system. The
+ * major difference is the PercentileFunction accepts the {@link PercentileArgument} as input rather
+ * than every single request.
  */
 @MeterFunction(functionName = "percentile")
 @Slf4j
-public abstract class PercentileFunction extends Metrics implements AcceptableValue<PercentileFunction.PercentileArgument>, MultiIntValuesHolder {
+public abstract class PercentileFunction extends Metrics
+    implements AcceptableValue<PercentileFunction.PercentileArgument>, MultiIntValuesHolder {
     public static final String DATASET = "dataset";
+
     public static final String RANKS = "ranks";
+
     public static final String VALUE = "value";
 
     @Setter
     @Getter
     @Column(columnName = ENTITY_ID, length = 512)
     private String entityId;
+
     @Getter
     @Setter
     @Column(columnName = VALUE, dataType = Column.ValueDataType.LABELED_VALUE, storageOnly = true)
     private DataTable percentileValues = new DataTable(10);
+
     @Getter
     @Setter
     @Column(columnName = DATASET, storageOnly = true)
     private DataTable dataset = new DataTable(30);
+
     /**
      * Rank
      */
@@ -79,20 +86,23 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
         if (dataset.size() > 0) {
             if (!value.getBucketedValues().isCompatible(dataset)) {
                 throw new IllegalArgumentException(
-                    "Incompatible BucketedValues [" + value + "] for current PercentileFunction[" + dataset + "]");
+                    "Incompatible BucketedValues [" + value + "] for current PercentileFunction[" +
+                        dataset + "]");
             }
         }
 
         for (final int rank : value.getRanks()) {
             if (rank <= 0) {
-                throw new IllegalArgumentException("Illegal rank value " + rank + ", must be positive");
+                throw new IllegalArgumentException(
+                    "Illegal rank value " + rank + ", must be positive");
             }
         }
 
         if (ranks.size() > 0) {
             if (ranks.size() != value.getRanks().length) {
                 throw new IllegalArgumentException(
-                    "Incompatible ranks size = [" + value.getRanks().length + "] for current PercentileFunction[" + ranks
+                    "Incompatible ranks size = [" + value.getRanks().length +
+                        "] for current PercentileFunction[" + ranks
                         .size() + "]");
             } else {
                 for (final int rank : value.getRanks()) {
@@ -113,7 +123,8 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
         final long[] values = value.getBucketedValues().getValues();
         for (int i = 0; i < values.length; i++) {
             final long bucket = value.getBucketedValues().getBuckets()[i];
-            String bucketName = bucket == Long.MIN_VALUE ? Bucket.INFINITE_NEGATIVE : String.valueOf(bucket);
+            String bucketName =
+                bucket == Long.MIN_VALUE ? Bucket.INFINITE_NEGATIVE : String.valueOf(bucket);
             final long bucketValue = values[i];
             dataset.valueAccumulation(bucketName, bucketValue);
         }
@@ -140,7 +151,8 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
                 return true;
             } else {
                 if (!this.ranks.equals(ranksOfThat)) {
-                    log.warn("Rank {} doesn't exist in the previous ranks {}", ranksOfThat, this.ranks);
+                    log.warn(
+                        "Rank {} doesn't exist in the previous ranks {}", ranksOfThat, this.ranks);
                     return true;
                 }
             }
@@ -163,7 +175,8 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
             }
 
             int count = 0;
-            final List<String> sortedKeys = dataset.sortedKeys(Comparator.comparingInt(Integer::parseInt));
+            final List<String> sortedKeys =
+                dataset.sortedKeys(Comparator.comparingInt(Integer::parseInt));
 
             int loopIndex = 0;
 
@@ -175,7 +188,8 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
                     int roof = roofs[rankIdx];
 
                     if (count >= roof) {
-                        percentileValues.put(String.valueOf(ranks.get(rankIdx)), Long.parseLong(key));
+                        percentileValues.put(
+                            String.valueOf(ranks.get(rankIdx)), Long.parseLong(key));
                         loopIndex++;
                     } else {
                         break;
@@ -259,10 +273,12 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
     @Getter
     public static class PercentileArgument {
         private final BucketedValues bucketedValues;
+
         private final int[] ranks;
     }
 
-    public static class PercentileFunctionBuilder implements StorageHashMapBuilder<PercentileFunction> {
+    public static class PercentileFunctionBuilder
+        implements StorageHashMapBuilder<PercentileFunction> {
 
         @Override
         public PercentileFunction storage2Entity(final Map<String, Object> dbMap) {
@@ -294,10 +310,12 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof PercentileFunction))
+        }
+        if (!(o instanceof PercentileFunction)) {
             return false;
+        }
         PercentileFunction function = (PercentileFunction) o;
         return Objects.equals(entityId, function.entityId) &&
             getTimeBucket() == function.getTimeBucket();
@@ -306,5 +324,17 @@ public abstract class PercentileFunction extends Metrics implements AcceptableVa
     @Override
     public int hashCode() {
         return Objects.hash(entityId, getTimeBucket());
+    }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.percentileValues.recycle();
+        this.dataset.recycle();
+        this.ranks.recycle();
+        this.isCalculated = false;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 }

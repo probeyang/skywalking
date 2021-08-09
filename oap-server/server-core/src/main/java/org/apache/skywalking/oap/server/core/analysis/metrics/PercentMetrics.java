@@ -69,4 +69,14 @@ public abstract class PercentMetrics extends Metrics implements IntValueHolder {
     public int getValue() {
         return percentage;
     }
+
+    @Override
+    public void recycle() {
+        this.total = 0;
+        this.percentage = 0;
+        this.match = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

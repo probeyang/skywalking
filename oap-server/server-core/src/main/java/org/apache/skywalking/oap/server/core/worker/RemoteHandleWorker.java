@@ -25,6 +25,6 @@ import org.apache.skywalking.oap.server.core.remote.data.StreamData;
 @AllArgsConstructor
 @Getter
 public class RemoteHandleWorker {
-    private AbstractWorker worker;
+    private AbstractWorker<StreamData> worker;
     private Class<? extends StreamData> streamDataClass;
 }

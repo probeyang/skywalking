@@ -18,9 +18,11 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import io.netty.util.internal.ObjectPool;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.skywalking.oap.server.core.Recyclable;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.remote.data.StreamData;
 import org.apache.skywalking.oap.server.core.storage.StorageData;
@@ -33,7 +35,7 @@ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 @EqualsAndHashCode(of = {
     "timeBucket"
 })
-public abstract class Metrics extends StreamData implements StorageData {
+public abstract class Metrics extends StreamData implements StorageData, Recyclable<Metrics> {
 
     public static final String TIME_BUCKET = "time_bucket";
     public static final String ENTITY_ID = "entity_id";
@@ -51,6 +53,8 @@ public abstract class Metrics extends StreamData implements StorageData {
      */
     @Getter
     private long lastUpdateTimestamp = 0L;
+
+    protected ObjectPool.Handle<Metrics> handle;
 
     /**
      * Merge the given metrics instance, these two must be the same metrics type.
@@ -153,4 +157,9 @@ public abstract class Metrics extends StreamData implements StorageData {
     }
 
     protected abstract String id0();
+
+    @Override
+    public void handle(final ObjectPool.Handle<Metrics> handle) {
+        this.handle = handle;
+    }
 }

@@ -21,6 +21,7 @@ package org.apache.skywalking.apm.commons.datacarrier.consumer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import lombok.RequiredArgsConstructor;
 import org.apache.skywalking.apm.commons.datacarrier.EnvUtil;
 import org.apache.skywalking.apm.commons.datacarrier.buffer.Channels;
 
@@ -36,7 +37,7 @@ public class BulkConsumePool implements ConsumerPool {
 
     public BulkConsumePool(String name, int size, long consumeCycle) {
         size = EnvUtil.getInt(name + "_THREAD", size);
-        allConsumers = new ArrayList<MultipleChannelsConsumer>(size);
+        allConsumers = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             MultipleChannelsConsumer multipleChannelsConsumer = new MultipleChannelsConsumer("DataCarrier." + name + ".BulkConsumePool." + i + ".Thread", consumeCycle);
             multipleChannelsConsumer.setDaemon(true);
@@ -95,16 +96,11 @@ public class BulkConsumePool implements ConsumerPool {
     /**
      * The creator for {@link BulkConsumePool}.
      */
+    @RequiredArgsConstructor
     public static class Creator implements Callable<ConsumerPool> {
-        private String name;
-        private int size;
-        private long consumeCycle;
-
-        public Creator(String name, int poolSize, long consumeCycle) {
-            this.name = name;
-            this.size = poolSize;
-            this.consumeCycle = consumeCycle;
-        }
+        private final String name;
+        private final int size;
+        private final long consumeCycle;
 
         @Override
         public ConsumerPool call() {

@@ -57,5 +57,14 @@ public abstract class CPMMetrics extends Metrics implements LongValueHolder {
     public void calculate() {
         this.value = total / getDurationInMinute();
     }
+
+    @Override
+    public void recycle() {
+        this.value = 0;
+        this.total = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }
 

@@ -124,4 +124,15 @@ public abstract class PercentileMetrics extends Metrics implements MultiIntValue
                                .flatMapToInt(l -> IntStream.of(l.intValue()))
                                .toArray();
     }
+
+    @Override
+    public void recycle() {
+        this.percentileValues.recycle();
+        this.precision = 0;
+        this.dataset.recycle();
+        this.isCalculated = false;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

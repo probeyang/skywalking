@@ -217,4 +217,16 @@ public abstract class AvgLabeledFunction extends Metrics implements AcceptableVa
     public int hashCode() {
         return Objects.hash(entityId, getTimeBucket());
     }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.serviceId = null;
+        this.summation.recycle();
+        this.count.recycle();
+        this.value.recycle();
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

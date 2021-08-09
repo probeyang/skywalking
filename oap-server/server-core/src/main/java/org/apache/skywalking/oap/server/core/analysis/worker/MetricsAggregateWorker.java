@@ -43,17 +43,17 @@ import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
 @Slf4j
 public class MetricsAggregateWorker extends AbstractWorker<Metrics> {
     public final long l1FlushPeriod;
-    private AbstractWorker<Metrics> nextWorker;
+    private final AbstractWorker<Metrics> nextWorker;
     private final DataCarrier<Metrics> dataCarrier;
     private final MergableBufferedData<Metrics> mergeDataCache;
-    private CounterMetrics aggregationCounter;
+    private final CounterMetrics aggregationCounter;
     private long lastSendTime = 0;
 
     MetricsAggregateWorker(ModuleDefineHolder moduleDefineHolder, AbstractWorker<Metrics> nextWorker,
                            String modelName, long l1FlushPeriod) {
         super(moduleDefineHolder);
         this.nextWorker = nextWorker;
-        this.mergeDataCache = new MergableBufferedData();
+        this.mergeDataCache = new MergableBufferedData<>();
         String name = "METRICS_L1_AGGREGATION";
         this.dataCarrier = new DataCarrier<>("MetricsAggregateWorker." + modelName, name, 2, 10000);
 

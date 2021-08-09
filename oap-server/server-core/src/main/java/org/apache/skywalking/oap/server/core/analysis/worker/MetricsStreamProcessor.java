@@ -119,7 +119,6 @@ public class MetricsStreamProcessor implements StreamProcessor<Metrics> {
         this.create(moduleDefineHolder, StreamDefinition.from(stream), metricsClass);
     }
 
-    @SuppressWarnings("unchecked")
     public void create(ModuleDefineHolder moduleDefineHolder,
                        StreamDefinition stream,
                        Class<? extends Metrics> metricsClass) throws StorageException {
@@ -148,7 +147,7 @@ public class MetricsStreamProcessor implements StreamProcessor<Metrics> {
         MetricsTransWorker transWorker = null;
 
         final MetricsExtension metricsExtension = metricsClass.getAnnotation(MetricsExtension.class);
-        /**
+        /*
          * All metrics default are `supportDownSampling` and `insertAndUpdate`, unless it has explicit definition.
          */
         boolean supportDownSampling = true;

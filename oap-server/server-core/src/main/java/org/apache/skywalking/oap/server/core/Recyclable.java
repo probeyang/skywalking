@@ -13,23 +13,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package org.apache.skywalking.oap.server.core.analysis.manual.service;
+package org.apache.skywalking.oap.server.core;
 
-import org.apache.skywalking.oap.server.core.MetricsObjectPool;
-import org.apache.skywalking.oap.server.core.analysis.SourceDispatcher;
-import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
-import org.apache.skywalking.oap.server.core.source.ServiceMeta;
+import io.netty.util.internal.ObjectPool;
 
-public class ServiceMetaDispatcher implements SourceDispatcher<ServiceMeta> {
-    @Override
-    public void dispatch(final ServiceMeta source) {
-        ServiceTraffic traffic = MetricsObjectPool.get(ServiceTraffic.class);
-        traffic.setTimeBucket(source.getTimeBucket());
-        traffic.setName(source.getName());
-        traffic.setNodeType(source.getNodeType());
-        MetricsStreamProcessor.getInstance().in(traffic);
-    }
+public interface Recyclable<T> {
+    void handle(ObjectPool.Handle<T> handle);
+
+    void recycle();
 }

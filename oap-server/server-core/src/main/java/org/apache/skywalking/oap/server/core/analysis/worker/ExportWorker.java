@@ -25,8 +25,8 @@ import org.apache.skywalking.oap.server.core.worker.AbstractWorker;
 import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
 
 /**
- * A bridge worker. If the {@link ExporterModule} provider declared and provides a implementation of {@link
- * MetricValuesExportService}, forward the export data to it.
+ * A bridge worker. If the {@link ExporterModule} provider declared and provides an implementation
+ * of {@link MetricValuesExportService}, forward the export data to it.
  */
 public class ExportWorker extends AbstractWorker<ExportEvent> {
     private MetricValuesExportService exportService;
@@ -44,6 +44,8 @@ public class ExportWorker extends AbstractWorker<ExportEvent> {
                                                        .getService(MetricValuesExportService.class);
             }
             exportService.export(event);
+        } else {
+            event.getMetrics().recycle();
         }
     }
 

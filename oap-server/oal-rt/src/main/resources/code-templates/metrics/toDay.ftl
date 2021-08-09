@@ -1,5 +1,5 @@
 public org.apache.skywalking.oap.server.core.analysis.metrics.Metrics toDay() {
-${metricsClassPackage}${metricsName}Metrics metrics = new ${metricsClassPackage}${metricsName}Metrics();
+${metricsClassPackage}${metricsName}Metrics metrics = (${metricsClassPackage}${metricsName}Metrics) org.apache.skywalking.oap.server.core.MetricsObjectPool.get(${metricsClassPackage}${metricsName}Metrics.class);
 <#list fieldsFromSource as field>
     <#if field.columnName == "time_bucket">
         metrics.setTimeBucket(toTimeBucketInDay());

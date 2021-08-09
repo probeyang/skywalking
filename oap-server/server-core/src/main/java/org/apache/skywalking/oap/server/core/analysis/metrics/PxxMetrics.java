@@ -106,4 +106,15 @@ public abstract class PxxMetrics extends Metrics implements IntValueHolder {
             }
         }
     }
+
+    @Override
+    public void recycle() {
+        this.value = 0;
+        this.precision = 0;
+        this.isCalculated = false;
+        this.detailGroup.recycle();
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.manual.relation.instance;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.SourceDispatcher;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
 import org.apache.skywalking.oap.server.core.source.ServiceInstanceRelation;
@@ -37,7 +38,8 @@ public class ServiceInstanceCallRelationDispatcher implements SourceDispatcher<S
     }
 
     private void serverSide(ServiceInstanceRelation source) {
-        ServiceInstanceRelationServerSideMetrics metrics = new ServiceInstanceRelationServerSideMetrics();
+        ServiceInstanceRelationServerSideMetrics metrics =
+            MetricsObjectPool.get(ServiceInstanceRelationServerSideMetrics.class);
         metrics.setTimeBucket(source.getTimeBucket());
         metrics.setSourceServiceId(source.getSourceServiceId());
         metrics.setSourceServiceInstanceId(source.getSourceServiceInstanceId());
@@ -49,7 +51,8 @@ public class ServiceInstanceCallRelationDispatcher implements SourceDispatcher<S
     }
 
     private void clientSide(ServiceInstanceRelation source) {
-        ServiceInstanceRelationClientSideMetrics metrics = new ServiceInstanceRelationClientSideMetrics();
+        ServiceInstanceRelationClientSideMetrics metrics =
+            MetricsObjectPool.get(ServiceInstanceRelationClientSideMetrics.class);
         metrics.setTimeBucket(source.getTimeBucket());
         metrics.setSourceServiceId(source.getSourceServiceId());
         metrics.setSourceServiceInstanceId(source.getSourceServiceInstanceId());

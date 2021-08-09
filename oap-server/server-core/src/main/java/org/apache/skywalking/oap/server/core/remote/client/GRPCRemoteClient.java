@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.apm.commons.datacarrier.DataCarrier;
 import org.apache.skywalking.apm.commons.datacarrier.consumer.IConsumer;
+import org.apache.skywalking.oap.server.core.Recyclable;
 import org.apache.skywalking.oap.server.core.remote.data.StreamData;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.Empty;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteMessage;
@@ -49,13 +50,13 @@ public class GRPCRemoteClient implements RemoteClient {
     private final int bufferSize;
     private final Address address;
     private final AtomicInteger concurrentStreamObserverNumber = new AtomicInteger(0);
-    private SslContext sslContext;
+    private final SslContext sslContext;
     private GRPCClient client;
     private DataCarrier<RemoteMessage> carrier;
     private boolean isConnect;
-    private CounterMetrics remoteOutCounter;
-    private CounterMetrics remoteOutErrorCounter;
-    private int remoteTimeout;
+    private final CounterMetrics remoteOutCounter;
+    private final CounterMetrics remoteOutErrorCounter;
+    private final int remoteTimeout;
 
     public GRPCRemoteClient(final ModuleDefineHolder moduleDefineHolder,
                             final Address address,
@@ -76,9 +77,8 @@ public class GRPCRemoteClient implements RemoteClient {
                                              .createCounter(
                                                  "remote_out_count",
                                                  "The number(client side) of inside remote inside aggregate rpc.",
-                                                 new MetricsTag.Keys("dest", "self"), new MetricsTag.Values(
-                                                     address
-                                                         .toString(), "N")
+                                                 new MetricsTag.Keys("dest", "self"),
+                                                 new MetricsTag.Values(address.toString(), "N")
                                              );
         remoteOutErrorCounter = moduleDefineHolder.find(TelemetryModule.NAME)
                                                   .provider()
@@ -86,9 +86,8 @@ public class GRPCRemoteClient implements RemoteClient {
                                                   .createCounter(
                                                       "remote_out_error_count",
                                                       "The error number(client side) of inside remote inside aggregate rpc.",
-                                                      new MetricsTag.Keys("dest", "self"), new MetricsTag.Values(
-                                                          address
-                                                              .toString(), "N")
+                                                      new MetricsTag.Keys("dest", "self"),
+                                                      new MetricsTag.Values(address.toString(), "N")
                                                   );
     }
 
@@ -149,6 +148,11 @@ public class GRPCRemoteClient implements RemoteClient {
         builder.setRemoteData(streamData.serialize());
 
         this.getDataCarrier().produce(builder.build());
+
+        if (streamData instanceof Recyclable) {
+            log.info("Recycling pooled objects");
+            ((Recyclable<?>) streamData).recycle();
+        }
     }
 
     class RemoteMessageConsumer implements IConsumer<RemoteMessage> {

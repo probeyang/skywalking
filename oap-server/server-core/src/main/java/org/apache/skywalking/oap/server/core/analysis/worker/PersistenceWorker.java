@@ -23,6 +23,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.skywalking.oap.server.core.Recyclable;
 import org.apache.skywalking.oap.server.core.analysis.data.ReadWriteSafeCache;
 import org.apache.skywalking.oap.server.core.storage.StorageData;
 import org.apache.skywalking.oap.server.core.worker.AbstractWorker;
@@ -68,6 +69,12 @@ public abstract class PersistenceWorker<INPUT extends StorageData> extends Abstr
 
     public List<PrepareRequest> buildBatchRequests() {
         final List<INPUT> dataList = getCache().read();
-        return prepareBatch(dataList);
+        try {
+            return prepareBatch(dataList);
+        } finally {
+            dataList.stream().filter(it -> it instanceof Recyclable<?>)
+                    .<Recyclable<?>>map(it -> (Recyclable<?>) it)
+                    .forEach(Recyclable::recycle);
+        }
     }
 }

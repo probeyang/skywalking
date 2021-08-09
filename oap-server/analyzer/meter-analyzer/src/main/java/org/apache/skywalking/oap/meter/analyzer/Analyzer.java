@@ -35,6 +35,7 @@ import org.apache.skywalking.oap.meter.analyzer.dsl.Result;
 import org.apache.skywalking.oap.meter.analyzer.dsl.Sample;
 import org.apache.skywalking.oap.meter.analyzer.dsl.SampleFamily;
 import org.apache.skywalking.oap.meter.analyzer.k8s.K8sInfoRegistry;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.NodeType;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.analysis.manual.endpoint.EndpointTraffic;
@@ -260,7 +261,7 @@ public class Analyzer {
         }
 
         if (!com.google.common.base.Strings.isNullOrEmpty(entity.getInstanceName())) {
-            InstanceTraffic instanceTraffic = new InstanceTraffic();
+            InstanceTraffic instanceTraffic = MetricsObjectPool.get(InstanceTraffic.class);
             instanceTraffic.setName(entity.getInstanceName());
             instanceTraffic.setServiceId(entity.serviceId());
             instanceTraffic.setTimeBucket(TimeBucket.getMinuteTimeBucket(System.currentTimeMillis()));
@@ -285,7 +286,7 @@ public class Analyzer {
     }
 
     private void serverSide(MeterEntity entity) {
-        ServiceRelationServerSideMetrics metrics = new ServiceRelationServerSideMetrics();
+        ServiceRelationServerSideMetrics metrics = MetricsObjectPool.get(ServiceRelationServerSideMetrics.class);
         metrics.setTimeBucket(TimeBucket.getMinuteTimeBucket(System.currentTimeMillis()));
         metrics.setSourceServiceId(entity.sourceServiceId());
         metrics.setDestServiceId(entity.destServiceId());
@@ -295,7 +296,7 @@ public class Analyzer {
     }
 
     private void clientSide(MeterEntity entity) {
-        ServiceRelationClientSideMetrics metrics = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics metrics = MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         metrics.setTimeBucket(TimeBucket.getMinuteTimeBucket(System.currentTimeMillis()));
         metrics.setSourceServiceId(entity.sourceServiceId());
         metrics.setDestServiceId(entity.destServiceId());

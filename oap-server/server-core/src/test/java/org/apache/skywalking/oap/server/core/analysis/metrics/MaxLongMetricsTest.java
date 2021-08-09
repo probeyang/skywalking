@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class MaxLongMetricsTest {
 
     @Test
     public void testEntranceCombine() {
-        MaxLongMetricsImpl impl = new MaxLongMetricsImpl();
+        MaxLongMetricsImpl impl = MetricsObjectPool.get(MaxLongMetricsImpl.class);
         impl.combine(10);
         impl.combine(5);
         impl.combine(20);
@@ -39,11 +40,11 @@ public class MaxLongMetricsTest {
 
     @Test
     public void testSelfCombine() {
-        MaxLongMetricsImpl impl = new MaxLongMetricsImpl();
+        MaxLongMetricsImpl impl = MetricsObjectPool.get(MaxLongMetricsImpl.class);
         impl.combine(10);
         impl.combine(5);
 
-        MaxLongMetricsImpl impl2 = new MaxLongMetricsImpl();
+        MaxLongMetricsImpl impl2 = MetricsObjectPool.get(MaxLongMetricsImpl.class);
         impl2.combine(2);
         impl2.combine(6);
 
@@ -51,7 +52,7 @@ public class MaxLongMetricsTest {
         Assert.assertEquals(10, impl.getValue());
     }
 
-    public class MaxLongMetricsImpl extends MaxLongMetrics {
+    public static class MaxLongMetricsImpl extends MaxLongMetrics {
 
         @Override
         protected String id0() {

@@ -18,18 +18,21 @@
 
 package org.apache.skywalking.oap.server.core.analysis.manual.relation.endpoint;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class EndpointCallRelationTest {
     @Test
     public void testEndpointRelationServerSideMetricsEquals() {
-        EndpointRelationServerSideMetrics thisObject = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics thisObject =
+            MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         thisObject.setEntityId(
             "VXNlcg==.0-VXNlcg==-em1iaXotcHJvbW90aW9uMi1hZG1pbkAxMjUyNw==.1-L0Bpbi9hcGkvaGVhbHRo");
         thisObject.setTimeBucket(202101071505L);
 
-        EndpointRelationServerSideMetrics otherObject = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics otherObject =
+            MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         otherObject.setEntityId(
             "VXNlcg==.0-VXNlcg==-em1iaXotcHJvbW90aW9uMi1hZG1pbkAxMjUyNw==.1-L0Bpbi9hcGkvaGVhbHRo");
         otherObject.setTimeBucket(202101071505L);
@@ -39,12 +42,14 @@ public class EndpointCallRelationTest {
 
     @Test
     public void testEndpointRelationServerSideMetricsNotEquals() {
-        EndpointRelationServerSideMetrics thisObject = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics thisObject =
+            MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         thisObject.setEntityId(
             "VXNlcg==.0-VXNlcg==-em1iaXotcHJvbW90aW9uMi1hZG1pbkAxMjUyNw==.1-L0Bpbi9hcGkvaGVhbHRo");
         thisObject.setTimeBucket(202101071505L);
 
-        EndpointRelationServerSideMetrics otherObject = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics otherObject =
+            MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         otherObject.setEntityId(
             "VXNlcg==.0-VXNlcg==-em1iaXotcHJvbW90aW9uMi1hZG1pbkAxMjUyNw==.1-L0Bpbi9hcGkvaGVhbHRo");
         otherObject.setTimeBucket(202101071506L);

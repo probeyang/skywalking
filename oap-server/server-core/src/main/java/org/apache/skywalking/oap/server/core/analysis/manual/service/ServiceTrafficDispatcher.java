@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.manual.service;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.SourceDispatcher;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
 import org.apache.skywalking.oap.server.core.source.Service;
@@ -25,7 +26,7 @@ import org.apache.skywalking.oap.server.core.source.Service;
 public class ServiceTrafficDispatcher implements SourceDispatcher<Service> {
     @Override
     public void dispatch(final Service source) {
-        ServiceTraffic traffic = new ServiceTraffic();
+        ServiceTraffic traffic = MetricsObjectPool.get(ServiceTraffic.class);
         traffic.setTimeBucket(source.getTimeBucket());
         traffic.setName(source.getName());
         traffic.setNodeType(source.getNodeType());

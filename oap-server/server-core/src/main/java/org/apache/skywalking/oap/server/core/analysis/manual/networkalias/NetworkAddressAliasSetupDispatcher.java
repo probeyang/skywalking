@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.manual.networkalias;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.SourceDispatcher;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
 import org.apache.skywalking.oap.server.core.source.NetworkAddressAliasSetup;
@@ -25,7 +26,7 @@ import org.apache.skywalking.oap.server.core.source.NetworkAddressAliasSetup;
 public class NetworkAddressAliasSetupDispatcher implements SourceDispatcher<NetworkAddressAliasSetup> {
     @Override
     public void dispatch(final NetworkAddressAliasSetup source) {
-        final NetworkAddressAlias networkAddressAlias = new NetworkAddressAlias();
+        final NetworkAddressAlias networkAddressAlias = MetricsObjectPool.get(NetworkAddressAlias.class);
         networkAddressAlias.setTimeBucket(source.getTimeBucket());
         networkAddressAlias.setAddress(source.getAddress());
         networkAddressAlias.setRepresentServiceId(source.getRepresentServiceId());

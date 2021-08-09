@@ -92,7 +92,13 @@ public abstract class ApdexMetrics extends Metrics implements IntValueHolder {
     }
 
     @Override
-    public int getValue() {
-        return value;
+    public void recycle() {
+        this.totalNum = 0;
+        this.sNum = 0;
+        this.tNum = 0;
+        this.value = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 }

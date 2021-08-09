@@ -19,6 +19,7 @@
 package org.apache.skywalking.oap.server.core.exporter;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 
 /**
@@ -26,17 +27,13 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
  * changed in any case.
  */
 @Getter
+@RequiredArgsConstructor
 public class ExportEvent {
     /**
      * Fields of this should not be changed in any case.
      */
-    private Metrics metrics;
-    private EventType type;
-
-    public ExportEvent(Metrics metrics, EventType type) {
-        this.metrics = metrics;
-        this.type = type;
-    }
+    private final Metrics metrics;
+    private final EventType type;
 
     public enum EventType {
         /**

@@ -309,7 +309,7 @@ public class NotifyHandlerTest {
         Whitebox.setInternalState(notifyHandler, "core", core);
     }
 
-    private abstract class MockMetrics extends Metrics implements WithMetadata {
+    private abstract static class MockMetrics extends Metrics implements WithMetadata {
 
     }
 }

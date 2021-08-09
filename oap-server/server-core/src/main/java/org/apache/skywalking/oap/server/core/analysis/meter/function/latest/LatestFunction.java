@@ -41,7 +41,8 @@ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 
 @MeterFunction(functionName = "latest")
 @ToString
-public abstract class LatestFunction extends Metrics implements AcceptableValue<Long>, LongValueHolder {
+public abstract class LatestFunction extends Metrics
+    implements AcceptableValue<Long>, LongValueHolder {
     protected static final String VALUE = "value";
 
     @Setter
@@ -62,23 +63,27 @@ public abstract class LatestFunction extends Metrics implements AcceptableValue<
     @Column(columnName = VALUE, dataType = Column.ValueDataType.COMMON_VALUE, function = Function.Latest)
     private long value;
 
-    @Override public void accept(MeterEntity entity, Long value) {
+    @Override
+    public void accept(MeterEntity entity, Long value) {
         this.entityId = entity.id();
         this.serviceId = entity.serviceId();
         this.value = value;
     }
 
-    @Entrance public final void combine(@SourceFrom long value) {
+    @Entrance
+    public final void combine(@SourceFrom long value) {
         this.value = value;
     }
 
-    @Override public final boolean combine(Metrics metrics) {
+    @Override
+    public final boolean combine(Metrics metrics) {
         LatestFunction latestFunction = (LatestFunction) metrics;
         combine(latestFunction.value);
         return true;
     }
 
-    @Override public void calculate() {
+    @Override
+    public void calculate() {
 
     }
 
@@ -136,6 +141,16 @@ public abstract class LatestFunction extends Metrics implements AcceptableValue<
     @Override
     public Class<? extends LastestStorageBuilder> builder() {
         return LatestFunction.LastestStorageBuilder.class;
+    }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.serviceId = null;
+        this.value = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 
     public static class LastestStorageBuilder implements StorageHashMapBuilder<LatestFunction> {

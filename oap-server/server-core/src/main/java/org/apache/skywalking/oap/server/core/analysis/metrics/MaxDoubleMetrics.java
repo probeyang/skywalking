@@ -52,4 +52,12 @@ public abstract class MaxDoubleMetrics extends Metrics implements DoubleValueHol
     @Override
     public void calculate() {
     }
+
+    @Override
+    public void recycle() {
+        this.value = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

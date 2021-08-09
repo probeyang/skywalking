@@ -8,7 +8,7 @@ private void do${metricsName}(${sourcePackage}${sourceName} source) {
     </#list>
 </#if>
 
-${metricsClassPackage}${metricsName}Metrics metrics = new ${metricsClassPackage}${metricsName}Metrics();
+${metricsClassPackage}${metricsName}Metrics metrics = (${metricsClassPackage}${metricsName}Metrics) org.apache.skywalking.oap.server.core.MetricsObjectPool.get(${metricsClassPackage}${metricsName}Metrics.class);
 metrics.setTimeBucket(source.getTimeBucket());
 <#list fieldsFromSource as field>
     metrics.${field.fieldSetter}(source.${field.fieldGetter}());

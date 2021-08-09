@@ -41,7 +41,8 @@ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 
 @ToString
 @MeterFunction(functionName = "sum")
-public abstract class SumFunction extends Metrics implements AcceptableValue<Long>, LongValueHolder {
+public abstract class SumFunction extends Metrics
+    implements AcceptableValue<Long>, LongValueHolder {
     protected static final String VALUE = "value";
 
     @Setter
@@ -182,5 +183,15 @@ public abstract class SumFunction extends Metrics implements AcceptableValue<Lon
     @Override
     public int hashCode() {
         return Objects.hash(getEntityId(), getTimeBucket());
+    }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.serviceId = null;
+        this.value = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 }

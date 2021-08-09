@@ -221,4 +221,15 @@ public abstract class AvgHistogramFunction extends Metrics implements Acceptable
     public int hashCode() {
         return Objects.hash(entityId, getTimeBucket());
     }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.summation.recycle();
+        this.count.recycle();
+        this.dataset.recycle();
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

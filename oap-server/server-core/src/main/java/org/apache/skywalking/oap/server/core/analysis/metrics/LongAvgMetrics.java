@@ -64,4 +64,14 @@ public abstract class LongAvgMetrics extends Metrics implements LongValueHolder 
     public final void calculate() {
         this.value = this.summation / this.count;
     }
+
+    @Override
+    public void recycle() {
+        this.summation = 0;
+        this.count = 0;
+        this.value = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

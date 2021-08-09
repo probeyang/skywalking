@@ -72,7 +72,7 @@ public class NetworkAddressAlias extends Metrics {
         this.representServiceId = alias.getRepresentServiceId();
         this.representServiceInstanceId = alias.getRepresentServiceInstanceId();
         this.lastUpdateTimeBucket = alias.getLastUpdateTimeBucket();
-        /**
+        /*
          * Keep the time bucket as the same time inserted.
          */
         if (this.getTimeBucket() > metrics.getTimeBucket()) {
@@ -111,6 +111,17 @@ public class NetworkAddressAlias extends Metrics {
         builder.addDataLongs(lastUpdateTimeBucket);
         builder.addDataLongs(getTimeBucket());
         return builder;
+    }
+
+    @Override
+    public void recycle() {
+        this.address = null;
+        this.representServiceId = null;
+        this.representServiceInstanceId = null;
+        this.lastUpdateTimeBucket = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 
     public static class Builder implements StorageHashMapBuilder<NetworkAddressAlias> {

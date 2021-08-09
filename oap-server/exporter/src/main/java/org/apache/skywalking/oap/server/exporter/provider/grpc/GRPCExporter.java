@@ -59,7 +59,7 @@ public class GRPCExporter extends MetricFormatter implements MetricValuesExportS
     private final GRPCExporterSetting setting;
     private final MetricExportServiceGrpc.MetricExportServiceStub exportServiceFutureStub;
     private final MetricExportServiceGrpc.MetricExportServiceBlockingStub blockingStub;
-    private final DataCarrier exportBuffer;
+    private final DataCarrier<ExportData> exportBuffer;
     private final ReentrantLock fetchListLock;
     private volatile List<SubscriptionMetric> subscriptionList;
     private volatile long lastFetchTimestamp = 0;
@@ -71,7 +71,7 @@ public class GRPCExporter extends MetricFormatter implements MetricValuesExportS
         ManagedChannel channel = client.getChannel();
         exportServiceFutureStub = MetricExportServiceGrpc.newStub(channel);
         blockingStub = MetricExportServiceGrpc.newBlockingStub(channel);
-        exportBuffer = new DataCarrier<ExportData>(setting.getBufferChannelNum(), setting.getBufferChannelSize());
+        exportBuffer = new DataCarrier<>(setting.getBufferChannelNum(), setting.getBufferChannelSize());
         exportBuffer.consume(this, 1, 200);
         subscriptionList = new ArrayList<>();
         fetchListLock = new ReentrantLock();
@@ -151,46 +151,52 @@ public class GRPCExporter extends MetricFormatter implements MetricValuesExportS
                                        });
         AtomicInteger exportNum = new AtomicInteger();
         data.forEach(row -> {
-            ExportMetricValue.Builder builder = ExportMetricValue.newBuilder();
-
             Metrics metrics = row.getMetrics();
-            if (metrics instanceof LongValueHolder) {
-                long value = ((LongValueHolder) metrics).getValue();
-                builder.setLongValue(value);
-                builder.setType(ValueType.LONG);
-            } else if (metrics instanceof IntValueHolder) {
-                long value = ((IntValueHolder) metrics).getValue();
-                builder.setLongValue(value);
-                builder.setType(ValueType.LONG);
-            } else if (metrics instanceof DoubleValueHolder) {
-                double value = ((DoubleValueHolder) metrics).getValue();
-                builder.setDoubleValue(value);
-                builder.setType(ValueType.DOUBLE);
-            } else if (metrics instanceof MultiIntValuesHolder) {
-                int[] values = ((MultiIntValuesHolder) metrics).getValues();
-                for (int value : values) {
-                    builder.addLongValues(value);
+            try {
+                ExportMetricValue.Builder builder = ExportMetricValue.newBuilder();
+
+                if (metrics instanceof LongValueHolder) {
+                    long value = ((LongValueHolder) metrics).getValue();
+                    builder.setLongValue(value);
+                    builder.setType(ValueType.LONG);
+                } else if (metrics instanceof IntValueHolder) {
+                    long value = ((IntValueHolder) metrics).getValue();
+                    builder.setLongValue(value);
+                    builder.setType(ValueType.LONG);
+                } else if (metrics instanceof DoubleValueHolder) {
+                    double value = ((DoubleValueHolder) metrics).getValue();
+                    builder.setDoubleValue(value);
+                    builder.setType(ValueType.DOUBLE);
+                } else if (metrics instanceof MultiIntValuesHolder) {
+                    int[] values = ((MultiIntValuesHolder) metrics).getValues();
+                    for (int value : values) {
+                        builder.addLongValues(value);
+                    }
+                    builder.setType(ValueType.MULTI_LONG);
+                } else {
+                    return;
                 }
-                builder.setType(ValueType.MULTI_LONG);
-            } else {
-                return;
+
+                MetricsMetaInfo meta = row.getMeta();
+                builder.setMetricName(meta.getMetricsName());
+                builder.setEventType(ExportEvent.EventType.INCREMENT == row.getEventType()
+                                         ? EventType.INCREMENT
+                                         : EventType.TOTAL);
+                String entityName = getEntityName(meta);
+                if (entityName == null) {
+                    return;
+                }
+                builder.setEntityName(entityName);
+                builder.setEntityId(meta.getId());
+
+                builder.setTimeBucket(metrics.getTimeBucket());
+
+                streamObserver.onNext(builder.build());
+                exportNum.getAndIncrement();
+            } finally {
+                log.info("Recycling pooled objects");
+                metrics.recycle();
             }
-
-            MetricsMetaInfo meta = row.getMeta();
-            builder.setMetricName(meta.getMetricsName());
-            builder.setEventType(
-                EventType.INCREMENT.equals(row.getEventType()) ? EventType.INCREMENT : EventType.TOTAL);
-            String entityName = getEntityName(meta);
-            if (entityName == null) {
-                return;
-            }
-            builder.setEntityName(entityName);
-            builder.setEntityId(meta.getId());
-
-            builder.setTimeBucket(metrics.getTimeBucket());
-
-            streamObserver.onNext(builder.build());
-            exportNum.getAndIncrement();
         });
 
         streamObserver.onCompleted();

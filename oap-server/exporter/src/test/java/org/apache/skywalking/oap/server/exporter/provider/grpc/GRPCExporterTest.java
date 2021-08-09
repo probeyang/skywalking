@@ -22,6 +22,7 @@ import io.grpc.testing.GrpcServerRule;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.metrics.MetricsMetaInfo;
 import org.apache.skywalking.oap.server.core.analysis.metrics.WithMetadata;
 import org.apache.skywalking.oap.server.core.exporter.ExportData;
@@ -60,7 +61,7 @@ public class GRPCExporterTest {
 
     @Test
     public void export() {
-        ExportEvent event = new ExportEvent(new MockExporterMetrics(), ExportEvent.EventType.TOTAL);
+        ExportEvent event = new ExportEvent(MetricsObjectPool.get(MockExporterMetrics.class), ExportEvent.EventType.TOTAL);
         exporter.export(event);
     }
 
@@ -102,10 +103,10 @@ public class GRPCExporterTest {
 
     private List<ExportData> dataList() {
         List<ExportData> dataList = new LinkedList<>();
-        dataList.add(new ExportData(metaInfo, new MockMetrics(), INCREMENT));
-        dataList.add(new ExportData(metaInfo, new MockIntValueMetrics(), INCREMENT));
-        dataList.add(new ExportData(metaInfo, new MockLongValueMetrics(), INCREMENT));
-        dataList.add(new ExportData(metaInfo, new MockDoubleValueMetrics(), INCREMENT));
+        dataList.add(new ExportData(metaInfo, MetricsObjectPool.get(MockMetrics.class), INCREMENT));
+        dataList.add(new ExportData(metaInfo, MetricsObjectPool.get(MockIntValueMetrics.class), INCREMENT));
+        dataList.add(new ExportData(metaInfo, MetricsObjectPool.get(MockLongValueMetrics.class), INCREMENT));
+        dataList.add(new ExportData(metaInfo, MetricsObjectPool.get(MockDoubleValueMetrics.class), INCREMENT));
         return dataList;
     }
 }

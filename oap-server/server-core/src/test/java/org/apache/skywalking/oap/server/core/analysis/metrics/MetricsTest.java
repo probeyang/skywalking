@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,13 +26,13 @@ import org.junit.Test;
 public class MetricsTest {
     @Test
     public void testTransferToTimeBucket() {
-        MetricsMocker mocker = new MetricsMocker();
+        MetricsMocker mocker = MetricsObjectPool.get(MetricsMocker.class);
 
         mocker.setTimeBucket(201809120511L);
         Assert.assertEquals(2018091205L, mocker.toTimeBucketInHour());
         Assert.assertEquals(20180912L, mocker.toTimeBucketInDay());
 
-        mocker = new MetricsMocker();
+        mocker = MetricsObjectPool.get(MetricsMocker.class);
 
         mocker.setTimeBucket(2018091205L);
         Assert.assertEquals(20180912L, mocker.toTimeBucketInDay());
@@ -39,7 +40,7 @@ public class MetricsTest {
 
     @Test
     public void testIllegalTransferToTimeBucket() {
-        MetricsMocker mocker = new MetricsMocker();
+        MetricsMocker mocker = MetricsObjectPool.get(MetricsMocker.class);
         mocker.setTimeBucket(2018091205L);
 
         boolean status = true;
@@ -50,7 +51,7 @@ public class MetricsTest {
         }
         Assert.assertFalse(status);
 
-        mocker = new MetricsMocker();
+        mocker = MetricsObjectPool.get(MetricsMocker.class);
         mocker.setTimeBucket(20180912L);
 
         status = true;
@@ -70,7 +71,7 @@ public class MetricsTest {
         Assert.assertFalse(status);
     }
 
-    public class MetricsMocker extends Metrics {
+    public static class MetricsMocker extends Metrics {
 
         @Override
         protected String id0() {
@@ -110,6 +111,11 @@ public class MetricsTest {
         @Override
         public int remoteHashCode() {
             return 0;
+        }
+
+        @Override
+        public void recycle() {
+            handle.recycle(this);
         }
     }
 }

@@ -18,11 +18,13 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import io.netty.util.internal.ObjectPool;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.Recyclable;
 import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObject;
 
 /**
@@ -30,11 +32,11 @@ import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObje
  */
 @ToString
 @EqualsAndHashCode
-public class IntList implements StorageDataComplexObject<IntList> {
+public class IntList implements StorageDataComplexObject<IntList>, Recyclable<IntList> {
     private List<Integer> data;
 
     public IntList(int initialSize) {
-        this.data = new ArrayList(initialSize);
+        this.data = new ArrayList<>(initialSize);
     }
 
     public IntList(String valueString) {
@@ -83,5 +85,15 @@ public class IntList implements StorageDataComplexObject<IntList> {
 
     public int get(final int idx) {
         return this.data.get(idx);
+    }
+
+    @Override
+    public void handle(final ObjectPool.Handle<IntList> handle) {
+        // This is not directly pooled, don't need to handle it
+    }
+
+    @Override
+    public void recycle() {
+        this.data.clear();
     }
 }

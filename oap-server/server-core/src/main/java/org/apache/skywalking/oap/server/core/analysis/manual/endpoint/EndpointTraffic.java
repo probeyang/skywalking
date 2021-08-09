@@ -44,12 +44,14 @@ public class EndpointTraffic extends Metrics {
     public static final String INDEX_NAME = "endpoint_traffic";
 
     public static final String SERVICE_ID = "service_id";
+
     public static final String NAME = "name";
 
     @Setter
     @Getter
     @Column(columnName = SERVICE_ID)
     private String serviceId;
+
     @Setter
     @Getter
     @Column(columnName = NAME, matchQuery = true)
@@ -84,6 +86,15 @@ public class EndpointTraffic extends Metrics {
     @Override
     public int remoteHashCode() {
         return hashCode();
+    }
+
+    @Override
+    public void recycle() {
+        this.serviceId = null;
+        this.name = Const.EMPTY_STRING;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
     }
 
     public static class Builder implements StorageHashMapBuilder<EndpointTraffic> {

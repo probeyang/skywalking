@@ -201,7 +201,7 @@ public class MeterSystem implements Service {
 
         CtClass metricsClass = classPool.makeClass(METER_CLASS_PACKAGE + className, parentClass);
 
-        /**
+        /*
          * Create empty construct
          */
         try {
@@ -213,15 +213,15 @@ public class MeterSystem implements Service {
             throw new UnexpectedException(e.getMessage(), e);
         }
 
-        /**
+        /*
          * Generate `AcceptableValue<T> createNew()` method.
          */
         try {
             metricsClass.addMethod(CtNewMethod.make(
                 ""
                     + "public org.apache.skywalking.oap.server.core.analysis.meter.function.AcceptableValue createNew() {"
-                    + "    return new " + METER_CLASS_PACKAGE + className + "();"
-                    + " }"
+                    + "    return org.apache.skywalking.oap.server.core.MetricsObjectPool.get(" + METER_CLASS_PACKAGE + className + ".class);"
+                    + "}"
                 , metricsClass));
         } catch (CannotCompileException e) {
             log.error("Can't generate createNew method for " + className + ".", e);

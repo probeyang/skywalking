@@ -62,4 +62,9 @@ public class MockMetrics extends Metrics {
     public RemoteData.Builder serialize() {
         return null;
     }
+
+    @Override
+    public void recycle() {
+        handle.recycle(this);
+    }
 }

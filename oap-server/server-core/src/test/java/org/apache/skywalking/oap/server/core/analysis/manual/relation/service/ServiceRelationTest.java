@@ -18,17 +18,20 @@
 
 package org.apache.skywalking.oap.server.core.analysis.manual.relation.service;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class ServiceRelationTest {
     @Test
     public void testServiceRelationClientSideMetricsEquals() {
-        ServiceRelationClientSideMetrics thisObject = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics thisObject =
+            MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         thisObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         thisObject.setTimeBucket(202101071505L);
 
-        ServiceRelationClientSideMetrics otherObject = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics otherObject =
+            MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         otherObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         otherObject.setTimeBucket(202101071505L);
 
@@ -37,11 +40,13 @@ public class ServiceRelationTest {
 
     @Test
     public void testServiceRelationClientSideMetricsNotEquals() {
-        ServiceRelationClientSideMetrics thisObject = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics thisObject =
+            MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         thisObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         thisObject.setTimeBucket(202101071505L);
 
-        ServiceRelationClientSideMetrics otherObject = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics otherObject =
+            MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         otherObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         otherObject.setTimeBucket(202101071506L);
 
@@ -50,11 +55,13 @@ public class ServiceRelationTest {
 
     @Test
     public void testServiceRelationServerSideMetricsEquals() {
-        ServiceRelationServerSideMetrics thisObject = new ServiceRelationServerSideMetrics();
+        ServiceRelationServerSideMetrics thisObject =
+            MetricsObjectPool.get(ServiceRelationServerSideMetrics.class);
         thisObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         thisObject.setTimeBucket(202101071505L);
 
-        ServiceRelationServerSideMetrics otherObject = new ServiceRelationServerSideMetrics();
+        ServiceRelationServerSideMetrics otherObject =
+            MetricsObjectPool.get(ServiceRelationServerSideMetrics.class);
         otherObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         otherObject.setTimeBucket(202101071505L);
 
@@ -63,11 +70,13 @@ public class ServiceRelationTest {
 
     @Test
     public void testServiceRelationServerSideMetricsNotEquals() {
-        ServiceRelationServerSideMetrics thisObject = new ServiceRelationServerSideMetrics();
+        ServiceRelationServerSideMetrics thisObject =
+            MetricsObjectPool.get(ServiceRelationServerSideMetrics.class);
         thisObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         thisObject.setTimeBucket(202101071505L);
 
-        ServiceRelationServerSideMetrics otherObject = new ServiceRelationServerSideMetrics();
+        ServiceRelationServerSideMetrics otherObject =
+            MetricsObjectPool.get(ServiceRelationServerSideMetrics.class);
         otherObject.setEntityId("VXNlcg==.0-em0tY2xpZW50LXNldHRpbmctd2ViYXBpQDEwNjQ4.1");
         otherObject.setTimeBucket(202101071506L);
 

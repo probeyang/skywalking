@@ -27,6 +27,7 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.alarm.AlarmCallback;
 import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
 import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
@@ -50,7 +51,7 @@ import org.powermock.reflect.Whitebox;
  * So in this test, we need to simulate a lot of scenario to see the reactions.
  */
 public class RunningRuleTest {
-    private static DateTimeFormatter TIME_BUCKET_FORMATTER = DateTimeFormat.forPattern("yyyyMMddHHmm");
+    private static final DateTimeFormatter TIME_BUCKET_FORMATTER = DateTimeFormat.forPattern("yyyyMMddHHmm");
 
     @Test
     public void testInitAndStart() {
@@ -404,14 +405,15 @@ public class RunningRuleTest {
     }
 
     private Metrics getMetrics(long timeBucket, int value) {
-        MockMetrics mockMetrics = new MockMetrics();
+        MockMetrics mockMetrics = MetricsObjectPool.get(MockMetrics.class);
         mockMetrics.setValue(value);
         mockMetrics.setTimeBucket(timeBucket);
         return mockMetrics;
     }
 
     private Metrics getMultipleValueMetrics(long timeBucket, int... values) {
-        MockMultipleValueMetrics mockMultipleValueMetrics = new MockMultipleValueMetrics();
+        MockMultipleValueMetrics mockMultipleValueMetrics =
+            MetricsObjectPool.get(MockMultipleValueMetrics.class);
         mockMultipleValueMetrics.setValues(values);
         mockMultipleValueMetrics.setTimeBucket(timeBucket);
         return mockMultipleValueMetrics;
@@ -419,13 +421,14 @@ public class RunningRuleTest {
     }
 
     private Metrics getLabeledValueMetrics(long timeBucket, String values) {
-        MockLabeledValueMetrics mockLabeledValueMetrics = new MockLabeledValueMetrics();
+        MockLabeledValueMetrics mockLabeledValueMetrics =
+            MetricsObjectPool.get(MockLabeledValueMetrics.class);
         mockLabeledValueMetrics.setValue(new DataTable(values));
         mockLabeledValueMetrics.setTimeBucket(timeBucket);
         return mockLabeledValueMetrics;
     }
 
-    private class MockMetrics extends Metrics implements IntValueHolder {
+    public static class MockMetrics extends Metrics implements IntValueHolder {
         private int value;
 
         @Override
@@ -476,9 +479,17 @@ public class RunningRuleTest {
         public int remoteHashCode() {
             return 0;
         }
+
+        @Override
+        public void recycle() {
+            this.value = 0;
+            setTimeBucket(0);
+            setLastUpdateTimestamp(0);
+            handle.recycle(this);
+        }
     }
 
-    private class MockMultipleValueMetrics extends Metrics implements MultiIntValuesHolder {
+    public static class MockMultipleValueMetrics extends Metrics implements MultiIntValuesHolder {
         private int[] values;
 
         public void setValues(int[] values) {
@@ -529,9 +540,17 @@ public class RunningRuleTest {
         public RemoteData.Builder serialize() {
             return null;
         }
+
+        @Override
+        public void recycle() {
+            this.values = null;
+            setTimeBucket(0);
+            setLastUpdateTimestamp(0);
+            handle.recycle(this);
+        }
     }
 
-    private class MockLabeledValueMetrics extends Metrics implements LabeledValueHolder {
+    public static class MockLabeledValueMetrics extends Metrics implements LabeledValueHolder {
 
         @Getter
         @Setter
@@ -575,6 +594,14 @@ public class RunningRuleTest {
         @Override
         public RemoteData.Builder serialize() {
             return null;
+        }
+
+        @Override
+        public void recycle() {
+            this.value.recycle();
+            setTimeBucket(0);
+            setLastUpdateTimestamp(0);
+            handle.recycle(this);
         }
     }
 

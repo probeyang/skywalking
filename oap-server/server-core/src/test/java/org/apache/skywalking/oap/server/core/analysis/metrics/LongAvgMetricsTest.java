@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,7 +26,7 @@ import org.junit.Test;
 public class LongAvgMetricsTest {
     @Test
     public void testEntranceCombine() {
-        LongAvgMetricsImpl impl = new LongAvgMetricsImpl();
+        LongAvgMetricsImpl impl = MetricsObjectPool.get(LongAvgMetricsImpl.class);
         impl.combine(12, 1);
         impl.combine(24, 2);
         impl.combine(36, 3);
@@ -35,11 +36,11 @@ public class LongAvgMetricsTest {
 
     @Test
     public void testSelfCombine() {
-        LongAvgMetricsImpl impl = new LongAvgMetricsImpl();
+        LongAvgMetricsImpl impl = MetricsObjectPool.get(LongAvgMetricsImpl.class);
         impl.combine(12, 1);
         impl.combine(24, 2);
 
-        LongAvgMetricsImpl impl2 = new LongAvgMetricsImpl();
+        LongAvgMetricsImpl impl2 = MetricsObjectPool.get(LongAvgMetricsImpl.class);
         impl2.combine(24, 1);
         impl2.combine(48, 2);
 
@@ -49,7 +50,7 @@ public class LongAvgMetricsTest {
         Assert.assertEquals(18, impl.getValue());
     }
 
-    public class LongAvgMetricsImpl extends LongAvgMetrics {
+    public static class LongAvgMetricsImpl extends LongAvgMetrics {
 
         @Override
         protected String id0() {

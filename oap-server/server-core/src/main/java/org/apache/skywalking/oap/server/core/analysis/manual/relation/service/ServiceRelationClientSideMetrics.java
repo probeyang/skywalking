@@ -24,6 +24,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
@@ -85,7 +86,7 @@ public class ServiceRelationClientSideMetrics extends Metrics {
 
     @Override
     public Metrics toHour() {
-        ServiceRelationClientSideMetrics metrics = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics metrics = MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         metrics.setEntityId(getEntityId());
         metrics.setTimeBucket(toTimeBucketInHour());
         metrics.setSourceServiceId(getSourceServiceId());
@@ -96,7 +97,7 @@ public class ServiceRelationClientSideMetrics extends Metrics {
 
     @Override
     public Metrics toDay() {
-        ServiceRelationClientSideMetrics metrics = new ServiceRelationClientSideMetrics();
+        ServiceRelationClientSideMetrics metrics = MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
         metrics.setEntityId(getEntityId());
         metrics.setTimeBucket(toTimeBucketInDay());
         metrics.setSourceServiceId(getSourceServiceId());
@@ -136,11 +137,22 @@ public class ServiceRelationClientSideMetrics extends Metrics {
         return remoteBuilder;
     }
 
+    @Override
+    public void recycle() {
+        this.sourceServiceId = null;
+        this.destServiceId = null;
+        this.componentId = 0;
+        this.entityId = null;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
     public static class Builder implements StorageHashMapBuilder<ServiceRelationClientSideMetrics> {
 
         @Override
         public ServiceRelationClientSideMetrics storage2Entity(Map<String, Object> dbMap) {
-            ServiceRelationClientSideMetrics metrics = new ServiceRelationClientSideMetrics();
+            ServiceRelationClientSideMetrics metrics = MetricsObjectPool.get(ServiceRelationClientSideMetrics.class);
             metrics.setSourceServiceId((String) dbMap.get(SOURCE_SERVICE_ID));
             metrics.setDestServiceId((String) dbMap.get(DEST_SERVICE_ID));
             metrics.setComponentId(((Number) dbMap.get(COMPONENT_ID)).intValue());

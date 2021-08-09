@@ -20,6 +20,7 @@ package org.apache.skywalking.oap.server.core.analysis.meter.function;
 
 import java.util.Map;
 import java.util.stream.IntStream;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.meter.MeterEntity;
 import org.apache.skywalking.oap.server.core.analysis.metrics.DataTable;
 import org.apache.skywalking.oap.server.core.query.type.Bucket;
@@ -54,7 +55,7 @@ public class HistogramFunctionTest {
 
     @Test
     public void testFunction() {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -90,7 +91,7 @@ public class HistogramFunctionTest {
 
     @Test
     public void testFunctionWithInfinite() {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -118,7 +119,7 @@ public class HistogramFunctionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testIncompatible() {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -144,7 +145,7 @@ public class HistogramFunctionTest {
 
     @Test
     public void testSerialization() {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -156,7 +157,7 @@ public class HistogramFunctionTest {
             })
         );
 
-        final HistogramFunctionInst inst2 = new HistogramFunctionInst();
+        final HistogramFunctionInst inst2 = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst2.deserialize(inst.serialize().build());
 
         Assert.assertEquals(inst, inst2);
@@ -166,7 +167,7 @@ public class HistogramFunctionTest {
 
     @Test
     public void testSerializationInInfinite() {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -178,7 +179,7 @@ public class HistogramFunctionTest {
             })
         );
 
-        final HistogramFunctionInst inst2 = new HistogramFunctionInst();
+        final HistogramFunctionInst inst2 = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst2.deserialize(inst.serialize().build());
 
         Assert.assertEquals(inst, inst2);
@@ -188,7 +189,7 @@ public class HistogramFunctionTest {
 
     @Test
     public void testBuilder() throws IllegalAccessException, InstantiationException {
-        HistogramFunctionInst inst = new HistogramFunctionInst();
+        HistogramFunctionInst inst = MetricsObjectPool.get(HistogramFunctionInst.class);
         inst.accept(
             MeterEntity.newService("service-test"),
             new BucketedValues(
@@ -212,11 +213,11 @@ public class HistogramFunctionTest {
         Assert.assertEquals(inst.getDataset(), inst2.getDataset());
     }
 
-    private static class HistogramFunctionInst extends HistogramFunction {
+    public static class HistogramFunctionInst extends HistogramFunction {
 
         @Override
         public AcceptableValue<BucketedValues> createNew() {
-            return new HistogramFunctionInst();
+            return MetricsObjectPool.get(HistogramFunctionInst.class);
         }
     }
 }

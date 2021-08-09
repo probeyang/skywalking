@@ -147,6 +147,15 @@ public abstract class HistogramFunction extends Metrics implements AcceptableVal
         return HistogramFunctionBuilder.class;
     }
 
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.dataset.recycle();
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
     public static class HistogramFunctionBuilder implements StorageHashMapBuilder<HistogramFunction> {
 
         @Override

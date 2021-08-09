@@ -73,4 +73,14 @@ public abstract class RateMetrics extends Metrics implements IntValueHolder {
     public int getValue() {
         return percentage;
     }
+
+    @Override
+    public void recycle() {
+        this.denominator = 0;
+        this.percentage = 0;
+        this.numerator = 0;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }

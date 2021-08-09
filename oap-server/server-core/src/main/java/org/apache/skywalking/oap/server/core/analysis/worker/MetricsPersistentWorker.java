@@ -67,7 +67,7 @@ public class MetricsPersistentWorker extends PersistenceWorker<Metrics> {
     private final boolean enableDatabaseSession;
     private final boolean supportUpdate;
     private long sessionTimeout;
-    private CounterMetrics aggregationCounter;
+    private final CounterMetrics aggregationCounter;
     /**
      * The counter for the round of persistent.
      */
@@ -81,13 +81,13 @@ public class MetricsPersistentWorker extends PersistenceWorker<Metrics> {
     /**
      * @since 8.7.0 TTL settings from {@link org.apache.skywalking.oap.server.core.CoreModuleConfig#getMetricsDataTTL()}
      */
-    private int metricsDataTTL;
+    private final int metricsDataTTL;
 
     MetricsPersistentWorker(ModuleDefineHolder moduleDefineHolder, Model model, IMetricsDAO metricsDAO,
                             AbstractWorker<Metrics> nextAlarmWorker, AbstractWorker<ExportEvent> nextExportWorker,
                             MetricsTransWorker transWorker, boolean enableDatabaseSession, boolean supportUpdate,
                             long storageSessionTimeout, int metricsDataTTL) {
-        super(moduleDefineHolder, new ReadWriteSafeCache<>(new MergableBufferedData(), new MergableBufferedData()));
+        super(moduleDefineHolder, new ReadWriteSafeCache<>(new MergableBufferedData<>(), new MergableBufferedData<>()));
         this.model = model;
         this.context = new HashMap<>(100);
         this.enableDatabaseSession = enableDatabaseSession;
@@ -161,12 +161,12 @@ public class MetricsPersistentWorker extends PersistenceWorker<Metrics> {
     @Override
     public List<PrepareRequest> prepareBatch(Collection<Metrics> lastCollection) {
         if (persistentCounter++ % persistentMod != 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         long start = System.currentTimeMillis();
         if (lastCollection.size() == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         /*
@@ -233,11 +233,20 @@ public class MetricsPersistentWorker extends PersistenceWorker<Metrics> {
                     metrics.setLastUpdateTimestamp(timestamp);
                 }
 
-                /*
-                 * The `metrics` should be not changed in all above process. Exporter is an async process.
-                 */
-                nextExportWorker.ifPresent(exportEvenWorker -> exportEvenWorker.in(
-                    new ExportEvent(metrics, ExportEvent.EventType.INCREMENT)));
+                if (nextExportWorker.isPresent()) {
+                    /*
+                     * The `metrics` should be not changed in all above process as exporter is an
+                     * async process.
+                     *
+                     * Exporter is also responsible to recycle the passed-in metrics.
+                     */
+                    nextExportWorker.get().in(new ExportEvent(metrics, ExportEvent.EventType.INCREMENT));
+                } else {
+                    /*
+                     * No exporter is configured, metrics can be recycled right now.
+                     */
+                    metrics.recycle();
+                }
             }
         } catch (Throwable t) {
             log.error(t.getMessage(), t);

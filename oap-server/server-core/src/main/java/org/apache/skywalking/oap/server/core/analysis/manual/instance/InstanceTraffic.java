@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.apm.util.StringUtil;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.IDManager;
 import org.apache.skywalking.oap.server.core.analysis.MetricsExtension;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
@@ -79,7 +80,7 @@ public class InstanceTraffic extends Metrics {
         if (instanceTraffic.getProperties() != null && instanceTraffic.getProperties().size() > 0) {
             this.properties = instanceTraffic.getProperties();
         }
-        /**
+        /*
          * Keep the time bucket as the same time inserted.
          */
         if (this.getTimeBucket() > metrics.getTimeBucket()) {
@@ -125,10 +126,21 @@ public class InstanceTraffic extends Metrics {
         return IDManager.ServiceInstanceID.buildId(serviceId, name);
     }
 
+    @Override
+    public void recycle() {
+        this.serviceId = null;
+        this.name = null;
+        this.lastPingTimestamp = 0;
+        this.properties = null;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
     public static class Builder implements StorageHashMapBuilder<InstanceTraffic> {
         @Override
         public InstanceTraffic storage2Entity(final Map<String, Object> dbMap) {
-            InstanceTraffic instanceTraffic = new InstanceTraffic();
+            InstanceTraffic instanceTraffic = MetricsObjectPool.get(InstanceTraffic.class);
             instanceTraffic.setServiceId((String) dbMap.get(SERVICE_ID));
             instanceTraffic.setName((String) dbMap.get(NAME));
             final String propString = (String) dbMap.get(PROPERTIES);

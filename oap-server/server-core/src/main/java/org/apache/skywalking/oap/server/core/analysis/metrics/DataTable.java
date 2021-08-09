@@ -17,6 +17,7 @@
 
 package org.apache.skywalking.oap.server.core.analysis.metrics;
 
+import io.netty.util.internal.ObjectPool;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.Recyclable;
 import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObject;
 
 /**
@@ -33,8 +35,8 @@ import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObje
  */
 @ToString
 @EqualsAndHashCode
-public class DataTable implements StorageDataComplexObject<DataTable> {
-    private HashMap<String, Long> data;
+public class DataTable implements StorageDataComplexObject<DataTable>, Recyclable<DataTable> {
+    private final HashMap<String, Long> data;
 
     public DataTable() {
         data = new HashMap<>();
@@ -152,5 +154,15 @@ public class DataTable implements StorageDataComplexObject<DataTable> {
             this.data.put(key, current);
         });
         return this;
+    }
+
+    @Override
+    public void handle(final ObjectPool.Handle<DataTable> handle) {
+        // This is not directly pooled, don't need to handle it
+    }
+
+    @Override
+    public void recycle() {
+        this.data.clear();
     }
 }

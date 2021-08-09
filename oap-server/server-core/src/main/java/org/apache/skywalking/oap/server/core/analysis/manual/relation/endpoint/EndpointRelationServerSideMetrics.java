@@ -24,6 +24,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
@@ -80,7 +81,7 @@ public class EndpointRelationServerSideMetrics extends Metrics {
 
     @Override
     public Metrics toHour() {
-        EndpointRelationServerSideMetrics metrics = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics metrics = MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         metrics.setTimeBucket(toTimeBucketInHour());
         metrics.setSourceEndpoint(getSourceEndpoint());
         metrics.setDestEndpoint(getDestEndpoint());
@@ -91,7 +92,7 @@ public class EndpointRelationServerSideMetrics extends Metrics {
 
     @Override
     public Metrics toDay() {
-        EndpointRelationServerSideMetrics metrics = new EndpointRelationServerSideMetrics();
+        EndpointRelationServerSideMetrics metrics = MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
         metrics.setTimeBucket(toTimeBucketInDay());
         metrics.setSourceEndpoint(getSourceEndpoint());
         metrics.setDestEndpoint(getDestEndpoint());
@@ -132,11 +133,22 @@ public class EndpointRelationServerSideMetrics extends Metrics {
         return remoteBuilder;
     }
 
+    @Override
+    public void recycle() {
+        this.sourceEndpoint = null;
+        this.destEndpoint = null;
+        this.componentId = 0;
+        this.entityId = null;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
+
     public static class Builder implements StorageHashMapBuilder<EndpointRelationServerSideMetrics> {
 
         @Override
         public EndpointRelationServerSideMetrics storage2Entity(Map<String, Object> dbMap) {
-            EndpointRelationServerSideMetrics metrics = new EndpointRelationServerSideMetrics();
+            EndpointRelationServerSideMetrics metrics = MetricsObjectPool.get(EndpointRelationServerSideMetrics.class);
             metrics.setSourceEndpoint((String) dbMap.get(SOURCE_ENDPOINT));
             metrics.setDestEndpoint((String) dbMap.get(DEST_ENDPOINT));
             metrics.setComponentId(((Number) dbMap.get(COMPONENT_ID)).intValue());

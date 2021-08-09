@@ -17,6 +17,7 @@
 
 package org.apache.skywalking.oap.server.core.browser.manual.service;
 
+import org.apache.skywalking.oap.server.core.MetricsObjectPool;
 import org.apache.skywalking.oap.server.core.analysis.SourceDispatcher;
 import org.apache.skywalking.oap.server.core.analysis.manual.service.ServiceTraffic;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
@@ -26,7 +27,7 @@ import org.apache.skywalking.oap.server.core.browser.source.BrowserAppTraffic;
 public class BrowserAppTrafficDispatcher extends BrowserAppTrafficSourceDispatcher<BrowserAppTraffic> implements SourceDispatcher<BrowserAppTraffic> {
     @Override
     protected void dispatchInterval(final BrowserAppTraffic source) {
-        ServiceTraffic traffic = new ServiceTraffic();
+        ServiceTraffic traffic = MetricsObjectPool.get(ServiceTraffic.class);
         traffic.setTimeBucket(source.getTimeBucket());
         traffic.setName(source.getName());
         traffic.setNodeType(source.getNodeType());

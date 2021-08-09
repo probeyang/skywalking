@@ -378,4 +378,18 @@ public abstract class AvgHistogramPercentileFunction extends Metrics implements 
     public int hashCode() {
         return Objects.hash(entityId, getTimeBucket());
     }
+
+    @Override
+    public void recycle() {
+        this.entityId = null;
+        this.percentileValues.recycle();
+        this.summation.recycle();
+        this.count.recycle();
+        this.dataset.recycle();
+        this.ranks.recycle();
+        this.isCalculated = false;
+        setTimeBucket(0);
+        setLastUpdateTimestamp(0);
+        handle.recycle(this);
+    }
 }
